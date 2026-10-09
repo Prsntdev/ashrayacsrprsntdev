@@ -1,309 +1,147 @@
-<meta name='viewport' content='width=device-width, initial-scale=1'/><!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="hi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AshrayaCSR - Next-Gen Humanitarian Grid</title>
+    <title>AshrayaCSR - Unified Humanitarian Rescue Grid</title>
     <!-- Leaflet.js Maps CSS -->
     <link rel="stylesheet" href="https://unpkg.com" />
     <style>
         :root {
-            --bg-primary: #0f172a;
-            --bg-secondary: #1e293b;
-            --accent-blue: #2563eb;
-            --accent-green: #10b981;
-            --accent-red: #ef4444;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
+            --primary: #1e3a8a;
+            --dark: #0f172a;
+            --accent: #2563eb;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --bg: #f8fafc;
         }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; margin: 0; padding: 0; background-color: var(--bg); display: flex; flex-direction: column; height: 100vh; color: #334155; }
+        
+        /* Premium Header */
+        header { background: linear-gradient(135deg, var(--primary), #1d4ed8); color: white; padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        header h1 { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: 0.5px; }
+        header p { margin: 5px 0 0 0; font-size: 13px; color: #bfdbfe; }
+        .badge-it { background: rgba(255,255,255,0.2); padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; border: 1px solid rgba(255,255,255,0.3); }
 
-        body {
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: var(--bg-primary);
-            color: var(--text-main);
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            overflow: hidden;
+        /* Navigation Grid tabs */
+        .nav-tabs { display: flex; background-color: var(--dark); padding: 8px 20px; gap: 12px; box-shadow: inset 0 -2px 5px rgba(0,0,0,0.2); }
+        .tab-btn { padding: 12px 24px; background: transparent; color: #94a3b8; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; font-size: 14px; display: flex; align-items: center; gap: 8px; }
+        .tab-btn:hover { background-color: #1e293b; color: white; }
+        .tab-btn.active { background-color: var(--accent); color: white; box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2); }
+
+        .app-content { flex: 1; display: none; height: calc(100vh - 135px); animation: fadeIn 0.4s ease; }
+        .app-content.active-view { display: flex; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* View 1: Citizen Form */
+        .citizen-wrapper { flex: 1; display: flex; justify-content: center; align-items: center; padding: 20px; overflow-y: auto; }
+        .citizen-card { background: white; width: 100%; max-width: 550px; padding: 30px; border-radius: 16px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); border: 1px solid #e2e8f0; margin-top: 20px; margin-bottom: 20px; }
+        .form-group { margin-bottom: 20px; display: flex; flex-direction: column; gap: 6px; }
+        label { font-size: 13px; font-weight: 600; color: #475569; text-transform: uppercase; letter-spacing: 0.5px; }
+        input, textarea, select { padding: 12px 16px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; transition: all 0.2s; background: #f8fafc; }
+        input:focus, textarea:focus, select:focus { border-color: var(--accent); outline: none; background: white; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+        textarea { resize: none; height: 90px; }
+        .btn-submit { padding: 14px; background: linear-gradient(135deg, var(--accent), #1d4ed8); color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2); transition: transform 0.2s; width: 100%; }
+        .btn-submit:active { transform: scale(0.98); }
+        .status-alert { padding: 12px; border-radius: 8px; text-align: center; font-weight: 600; font-size: 13px; background: #f1f5f9; border: 1px dashed #cbd5e1; margin-bottom: 15px; }
+        .success-flash { background: #d1fae5; color: #065f46; border-color: #34d399; }
+
+        /* Layout Grid for Dashboard 2 & 3 */
+        .sidebar { width: 420px; background: white; padding: 20px; box-shadow: 4px 0 15px rgba(0,0,0,0.05); display: flex; flex-direction: column; gap: 16px; overflow-y: auto; box-sizing: border-box; border-right: 1px solid #e2e8f0; }
+        .map-area { flex: 1; height: 100%; position: relative; }
+        
+        /* Modern Flow Case Card */
+        .case-card { border: 1px solid #e2e8f0; padding: 18px; border-radius: 12px; background: white; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); transition: all 0.3s; }
+        .case-card:hover { box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); border-color: #cbd5e1; }
+        .case-header { display: flex; justify-content: space-between; align-items: center; }
+        .case-id { font-weight: 700; color: var(--dark); font-size: 15px; }
+        
+        .badge { font-size: 11px; padding: 4px 8px; border-radius: 20px; font-weight: 700; text-transform: uppercase; }
+        .badge-red { background-color: #fee2e2; color: #991b1b; }
+        .badge-orange { background-color: #ffedd5; color: #9a3412; }
+        .badge-blue { background-color: #dbeafe; color: #1e40af; }
+        .badge-green { background-color: #d1fae5; color: #065f46; }
+
+        /* 🚀 4-Stage Interactive Progress Tracker */
+        .timeline { display: flex; justify-content: space-between; align-items: center; margin: 8px 0; background: #f1f5f9; padding: 10px; border-radius: 8px; position: relative; }
+        .time-step { display: flex; flex-direction: column; align-items: center; gap: 4px; position: relative; flex: 1; text-align: center; }
+        .step-dot { width: 12px; height: 12px; border-radius: 50%; background: #cbd5e1; transition: all 0.3s; border: 2px solid white; box-shadow: 0 0 0 2px #cbd5e1; }
+        .step-label { font-size: 9px; font-weight: 700; color: #64748b; }
+        
+        /* Progress States */
+        .time-step.active .step-dot { background: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
+        .time-step.active .step-label { color: var(--accent); }
+        .time-step.completed .step-dot { background: var(--success); box-shadow: 0 0 0 2px var(--success); }
+        .time-step.completed .step-label { color: var(--success); }
+
+        .btn-action { padding: 10px 14px; background: var(--accent); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px; text-align: center; transition: all 0.2s; }
+        .btn-action:hover { background: #1d4ed8; }
+        .btn-success-action { background: var(--success); }
+        .btn-success-action:hover { background: #059669; }
+
+        /* Media Thumbnail Container */
+        .media-preview-box { width: 100%; max-height: 150px; border-radius: 8px; overflow: hidden; margin-top: 5px; border: 1px solid #e2e8f0; background: #000; display: flex; justify-content: center; align-items: center; }
+        .media-preview-box img, .media-preview-box video { max-width: 100%; max-height: 150px; object-fit: contain; }
+
+        @media (max-width: 900px) {
+            .app-content { flex-direction: column; }
+            .sidebar { width: 100%; height: 45vh; }
+            .map-area { height: 55vh; }
         }
-
-        header {
-            background-color: var(--bg-secondary);
-            padding: 15px 25px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #334155;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-        }
-
-        header h1 {
-            margin: 0;
-            font-size: 22px;
-            letter-spacing: 0.5px;
-            color: #fff;
-        }
-
-        header p {
-            margin: 3px 0 0 0;
-            font-size: 13px;
-            color: var(--text-muted);
-        }
-
-        .badge-challenge {
-            background: linear-gradient(135deg, #f59e0b, #d97706);
-            color: #000;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-weight: bold;
-            font-size: 12px;
-            box-shadow: 0 0 10px rgba(245, 158, 11, 0.4);
-        }
-
-        /* 3-Column Ecosystem Layout */
-        .workspace {
-            display: flex;
-            flex: 1;
-            height: calc(100vh - 75px);
-            overflow: hidden;
-        }
-
-        /* Left Side Panels (Citizen & NGO/CSR Grid) */
-        .controls-sidebar {
-            width: 450px;
-            background-color: var(--bg-secondary);
-            border-right: 1px solid #334155;
-            display: flex;
-            flex-direction: column;
-            overflow-y: auto;
-        }
-
-        .section-box {
-            padding: 20px;
-            border-bottom: 1px solid #334155;
-        }
-
-        .section-title {
-            font-size: 16px;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: #38bdf8;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        /* Form Styling */
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            margin-bottom: 12px;
-        }
-
-        label {
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--text-muted);
-        }
-
-        input, textarea, select {
-            background-color: var(--bg-primary);
-            border: 1px solid #475569;
-            border-radius: 8px;
-            padding: 10px 12px;
-            color: var(--text-main);
-            font-size: 13px;
-            transition: all 0.2s;
-        }
-
-        input:focus, textarea:focus, select:focus {
-            outline: none;
-            border-color: var(--accent-blue);
-            box-shadow: 0 0 8px rgba(37, 99, 235, 0.3);
-        }
-
-        button {
-            width: 100%;
-            padding: 12px;
-            border: none;
-            border-radius: 8px;
-            font-weight: bold;
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .btn-blue { background-color: var(--accent-blue); color: white; }
-        .btn-blue:hover { background-color: #1d4ed8; }
-        .btn-action { padding: 6px 10px; font-size: 12px; border-radius: 6px; margin-top: 5px; width: auto; align-self: flex-start; }
-        .btn-green { background-color: var(--accent-green); color: white; }
-        .btn-green:hover { background-color: #059669; }
-
-        /* Case Feed Stream Cards */
-        .feed-container {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            max-height: 300px;
-            overflow-y: auto;
-            padding-right: 5px;
-        }
-
-        .case-card {
-            background-color: var(--bg-primary);
-            border: 1px solid #334155;
-            border-radius: 8px;
-            padding: 12px;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            transition: transform 0.2s;
-        }
-
-        .case-card:hover {
-            transform: translateY(-2px);
-            border-color: #475569;
-        }
-
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 12px;
-            font-weight: bold;
-        }
-
-        .status-badge {
-            padding: 3px 8px;
-            border-radius: 12px;
-            font-size: 11px;
-        }
-
-        .status-pending { background-color: rgba(239, 68, 68, 0.15); color: var(--accent-red); border: 1px solid rgba(239, 68, 68, 0.3); }
-        .status-rescued { background-color: rgba(16, 185, 129, 0.15); color: var(--accent-green); border: 1px solid rgba(16, 185, 129, 0.3); }
-
-        /* Right Side Map Area */
-        #map-container {
-            flex: 1;
-            position: relative;
-        }
-
-        #map {
-            width: 100%;
-            height: 100%;
-        }
-
-        .map-overlay-title {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            background-color: rgba(30, 41, 59, 0.85);
-            backdrop-filter: blur(8px);
-            padding: 8px 15px;
-            border-radius: 8px;
-            border: 1px solid #334155;
-            z-index: 1000;
-            font-size: 12px;
-            font-weight: bold;
-            color: #38bdf8;
-        }
-
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: var(--bg-primary); }
-        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 10px; }
     </style>
 </head>
 <body>
 
     <header>
         <div>
-            <h1>🤝 AshrayaCSR Matrix</h1>
-            <p>Designed by Prashant Yadav & Harshit | IT Branch, Government Polytechnic Lucknow</p>
+            <h1>🤝 Project AshrayaCSR</h1>
+            <p>सेवा संकल्पना इन्नोवेशन चैलेंज | गवर्नमेंट पॉलिटेक्निक लखनऊ</p>
         </div>
-        <div class="badge-challenge">🏆 सेवा संकल्पना: Innovation Challenge 2026</div>
+        <div class="badge-it">IT Branch • Prashant & Harshit</div>
     </header>
 
-    <div class="workspace">
-        <!-- Left Control Ecosystem -->
-        <div class="controls-sidebar">
-            
-            <!-- Tier 1: Citizen Input Platform -->
-            <div class="section-box">
-                <div class="section-title">📱 1. Citizen Reporter Interface</div>
+    <!-- Navigation Tabs -->
+    <div class="nav-tabs">
+        <button class="tab-btn active" onclick="switchView('citizenView', this)">📱 1. सिटिजन रिपोर्टर (रोड साइड)</button>
+        <button class="tab-btn" onclick="switchView('ngoView', this)">🏢 2. एनजीओ लाइव डैशबोर्ड (रेस्क्यू)</button>
+        <button class="tab-btn" onclick="switchView('csrView', this)">💼 3. कॉर्पोरेट CSR ग्रिड (सुरक्षित आश्रय)</button>
+    </div>
+
+    <!-- VIEW 1: Citizen Reporter Form -->
+    <div id="citizenView" class="app-content active-view">
+        <div class="citizen-wrapper">
+            <div class="citizen-card">
+                <h3 style="margin:0 0 15px 0; color: var(--dark); font-size: 20px;">📸 सड़क किनारे से लाइव वीडियो/फोटो अपलोड करें</h3>
                 <div class="form-group">
-                    <label>Condition Description / विवरण</label>
-                    <textarea id="caseDesc" placeholder="e.g., Extremely sick elderly person on footpath needing immediate rescue..."></textarea>
+                    <label>पीड़ित की स्थिति का विवरण (Condition Description)</label>
+                    <textarea id="familyDetails" placeholder="उदा: एक बीमार बुजुर्ग व्यक्ति परिवार के साथ खुले फुटपाथ पर दयनीय स्थिति में लेटे हैं, तुरंत चिकित्सा और आश्रय की आवश्यकता है..."></textarea>
                 </div>
                 <div class="form-group">
-                    <label>Nearby Landmark / स्थल संकेत</label>
-                    <input type="text" id="caseLandmark" placeholder="e.g., Near Munshipulia Metro Pillar 12, Lucknow">
+                    <label>सटीक लैंडमार्क / सड़क का नाम</label>
+                    <input type="text" id="landmarkInput" placeholder="उदा: मुंशीपुलिया मेट्रो पिलर नंबर 12 के पास, लखनऊ">
                 </div>
-                <button class="btn-blue" onclick="citizenReportTrigger()">🚀 Broadcast Live Emergency Alert</button>
-            </div>
-
-            <!-- Tier 2: Real-time NGO & CSR Grid Feeds -->
-            <div class="section-box" style="flex: 1;">
-                <div class="section-title">🏢 2. NGO & 💼 3. CSR Unified Control Grid</div>
-                <div id="feedStream" class="feed-container">
-                    <!-- Real-time dynamic nodes appear here -->
+                <div class="form-group">
+                    <label>आपातकाल का स्तर (Urgency)</label>
+                    <select id="urgencyLevel">
+                        <option value="🔴 Critical">🔴 Critical (तुरंत एम्बुलेंस/इलाज चाहिए)</option>
+                        <option value="🟡 Immediate">🟡 Immediate (भोजन और रैन बसेरा चाहिए)</option>
+                    </select>
                 </div>
+                <!-- 🎥 NEW: Live Video / Photo Input Field -->
+                <div class="form-group">
+                    <label>लाइव वीडियो / फोटो अपलोड करें (Upload Media)</label>
+                    <input type="file" id="mediaUpload" accept="image/*,video/*" onchange="previewSelectedMedia()">
+                    <div id="formMediaPreview" style="display:none;" class="media-preview-box"></div>
+                </div>
+                <div id="submitStatus" class="status-alert">GPS: Automated location tracking enabled</div>
+                <button class="btn-submit" onclick="simulateCitizenSubmit()">🚀 Send Live Alert to Local Grid</button>
             </div>
-
-        </div>
-
-        <!-- Right Map Dashboard View -->
-        <div id="map-container">
-            <div class="map-overlay-title">📡 LIVE HYPERLOCAL RADAR: LUCKNOW ACTIVE CORRIDORS</div>
-            <div id="map"></div>
         </div>
     </div>
 
-    <!-- Leaflet JS Map Infrastructure Library -->
-    <script src="https://unpkg.com"></script>
-    <script>
-        // Centralized Runtime Memory Layer (Simulating a Production NoSQL Database)
-        let dataset = [
-            {
-                id: "CASE-LKO-882",
-                desc: "An elderly person unable to walk, lying under the bridge flyover.",
-                landmark: "Polytechnic Chauraha, Lucknow",
-                lat: 26.8726, lng: 80.9856,
-                status: "Pending Rescue",
-                budget: "₹15,000/mo Needed",
-                sponsor: "None"
-            },
-            {
-                id: "CASE-LKO-441",
-                desc: "Mother with a small toddler shivering without proper blankets on pavement.",
-                landmark: "Hazratganj GPO Crossing, Lucknow",
-                lat: 26.8504, lng: 80.9404,
-                status: "Rescued & Sheltered",
-                budget: "Fully Funded",
-                sponsor: "Tata Foundation CSR"
-            }
-        ];
-
-        let mapObj;
-        let mapMarkers = {};
-
-        // Initialize Core Viewport Matrix
-        function startSystem() {
-            // Centers map onto standard Lucknow coordinates grid
-            mapObj = L.map('map', { zoomControl: false }).setView([26.875, 80.965], 13);
-            L.control.zoom({ position: 'bottomright' }).addTo(mapObj);
-
-            // Dark-styled sleek map layers matching the dashboard aesthetic
-            L.tileLayer('https://{s}://{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap'
-            }).addTo(mapObj);
-
-            refreshDashboardGrid();
-        }
-
-        // Logic for Tier 1: Action Dispatch Trigger
+    <!-- VIEW 2: NGO Live Dashboard -->
+    <div id="ngoView" class="app-content">
+        <div class="sidebar">
+            
