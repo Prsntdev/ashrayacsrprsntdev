@@ -145,3 +145,74 @@
     <div id="ngoView" class="app-content">
         <div class="sidebar">
             
+2. टीम रवाना
+
+
+3. रेस्क्यू/इलाज
+
+
+4. सुरक्षित होम
+
+${c.stage === 1 ? <button class="btn-action" onclick="advanceNgoStage('${c.id}', 2)">🚒 रेस्क्यू टीम रवाना करें</button> : ''}
+${c.stage === 2 ? <button class="btn-action btn-success-action" onclick="advanceNgoStage('${c.id}', 3)">✅ रेस्क्यू/अस्पताल शिफ्ट पूरा करें</button> : ''}
+${c.stage >= 3 ? <div style="font-size:12px; color:#059669; font-weight:bold; text-align:center;">✨ एनजीओ रेस्क्यू सफल हुआ। आश्रय अलॉटमेंट के लिए केस आगे बढ़ा।</div> : ''}
+`;
+listContainer.appendChild(card);
+});
+}
+function advanceNgoStage(caseId, nextStage) {
+const target = globalCases.find(c => c.id === caseId);
+if (target) {
+target.stage = nextStage;
+renderNgoPanel();
+ngoMarkers[caseId].openPopup();
+}
+}
+// View 3 Logic: Corporate CSR Funding
+function initCsrMap() {
+csrMapObj = L.map('csrMap').setView([26.8864, 80.9642], 13);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(csrMapObj);
+}
+function renderCsrPanel() {
+const listContainer = document.getElementById('csrCaseList');
+listContainer.innerHTML = "";
+Object.values(csrMarkers).forEach(m => csrMapObj.removeLayer(m));
+csrMarkers = {};
+globalCases.forEach(c => {
+if (c.stage < 3) return;
+let currentStatusText = c.stage === 3 ? "आश्रय पेंडिंग (Awaiting Shelter)" : "सुरक्षित होम शटल (Secured)";
+let badgeClass = c.stage === 3 ? "badge-orange" : "badge-green";
+const mediaMarkup = generateMediaHTML(c);
+const marker = L.marker([c.lat, c.lng]).addTo(csrMapObj)
+.bindPopup(<b>Sponsor:</b> ${c.sponsoredBy}<br>${mediaMarkup});
+csrMarkers[c.id] = marker;
+const card = document.createElement('div');
+card.className = "case-card";
+card.innerHTML = `
+
+ID: ${c.id}
+${currentStatusText}
+
+रेस्क्यू स्थल: ${c.landmark}
+मासिक पुनर्वास खर्च: ${c.fundingRequired}
+${mediaMarkup}
+1. रोड साइड
+2. टीम रवाना
+3. रेस्क्यू/इलाज
+4. सुरक्षित होम
+${c.stage === 3 ? <button class="btn-action" style="background-color: var(--primary);" onclick="triggerCsrFinalRehab('${c.id}')">💼 CSR फंड से स्थाई होम शेल्टर अलॉट करें</button> : <div style="font-size:12px; color:#1e3a8a; font-weight:bold; background:#dbeafe; padding:8px; border-radius:6px; text-align:center;"> 🎉 स्पॉन्सर: ${c.sponsoredBy}<br> 🏠 स्थिति: रैन बसेरे / होम शेल्टर में जीवन सुरक्षित है। </div>}
+`;
+listContainer.appendChild(card);
+});
+}
+function triggerCsrFinalRehab(caseId) {
+const target = globalCases.find(c => c.id === caseId);
+if (target) {
+target.stage = 4;
+target.sponsoredBy = "Polytechnic Lucknow IT CSR Care ✅";
+target.fundingRequired = "Fully Sponsored";
+renderCsrPanel();
+csrMarkers[caseId].openPopup();
+}
+}
+window.onload = initMap;
